@@ -5,6 +5,7 @@ window.onload = function(){
   window.game.gameSetup(2);
   //Bindings go here.
 
+  doSomeMath();
   //Test code
 
 };
