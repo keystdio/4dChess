@@ -5,18 +5,69 @@ function doSomeMath(){
 	h1.innerHTML = "Possible steps(When placed center, single chess)";
 	place.appendChild(h1);
 
-	// var A = [[1,2,3],[4,5,6]];
-	// var x = [7,8,9];
-	// var result = numeric.dot(A,x);
-	// place.innerHTML = result;
-
-
 	var x0 = 4;
 	var y0 = 4;
 
 	var x = [x0,y0];
 	var xT = numeric.exp(x);
 	var doables = new Array();
+	doables.push(move(x,0,2));
+
+
+	display(place,doables);
+	
+}
+// make a move in the @dir direction for @step steps from point @x
+// return the ending point if only target is within the board
+// return the original point if the target is out of board
+function move(x,dir,step){
+	var eleP = Math.exp(step);
+	var eleN = Math.exp(-1*step);
+	var xT = numeric.exp(x);
+	switch(dir){
+		case 0:
+			var A = [[1,0],[0,eleP]];
+			break;
+		case 1:
+			var A = [[eleP,0],[0,eleP]];
+			break;
+		case 2:
+			var A = [[eleP,0],[0,1]];
+			break;
+		case 3:
+			var A = [[eleP,0],[0,eleN]];
+			break;
+		case 4:
+			var A = [[1,0],[0,eleN]];
+			break;
+		case 5:
+			var A = [[eleN,0],[0,eleN]];
+			break;
+		case 6:
+			var A = [[eleN,0],[0,1]];
+			break;
+		case 7:
+			var A = [[eleN,0],[0,eleN]];
+			break;
+	}
+	xE = numeric.log(numeric.dot(A,xT));
+	if(xE[0]<9&&xE[0]>0 && xE[1]<9&&xE[1]>0)
+		return xE;
+	else
+		return x;
+
+}
+
+// display a list of possibilities in a <ul>
+function display(place,doables){
+	var list = document.createElement("ul");
+	for(var i=0;i<doables.length;i++){
+		var li = document.createElement("li");
+		li.innerHTML = doables[i];
+		list.appendChild(li);
+	}
+	place.appendChild(list);
+}
 /*
 	// a Rook at point (4,4), horizontal and vertical i steps;
 
@@ -71,13 +122,4 @@ function doSomeMath(){
 		}
 	}
 */
-
-	var list = document.createElement("ul");
-	for(var i=0;i<doables.length;i++){
-		var li = document.createElement("li");
-		li.innerHTML = doables[i];
-		list.appendChild(li);
-	}
-	place.appendChild(list);
-}
 	
