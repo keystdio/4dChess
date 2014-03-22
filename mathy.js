@@ -5,22 +5,89 @@ function doSomeMath(){
 	h1.innerHTML = "Possible steps(When placed center, single chess)";
 	place.appendChild(h1);
 
-	var x0 = 4;
-	var y0 = 4;
+	chessTutorial()
+	// doables.push(pairMoves(x,0,2));
 
+	// display(place,doables);
+
+	// console.log(window.game.boards[0].grid);
+	// console.log(window.game.view.tiles);
+}
+
+// Each pieces' doables when placed at (4,4)
+function chessTutorial(){
+	var x0 = 3;
+	var y0 = 1;
 	var x = [x0,y0];
-	var xT = numeric.exp(x);
-	var doables = new Array();
-	doables.push(move(x,0,2));
 
+	var rook = [4,0,4,0,4,0,4,0];
+	var bishop = [0,4,0,4,0,4,0,4];
+	var queen = [4,4,4,4,4,4,4,4];
+	var king = [1,1,1,1,1,1,1,1];
 
+	var doables = analyseDoables(x,bishop);
+	
+	var place = document.getElementById("mathy");
 	display(place,doables);
+}
+
+// @x the piece current position
+// @list an array containing the maximum steps in that 'index' direction
+// return a list of doables step
+
+// ! -- Need to fix duplicates of copies.
+function analyseDoables(x,list){
+	var doables = new Array();
+	for(var dir=0;dir<list.length;dir++){
+		var max = list[dir];
+		for(var step=1;step<=max;step++){
+			doables.push(move(x,dir,step,false));
+		}
+	}
+
+	return doables;
+}
+
+// Make a Move made out of two separate moves. 
+// designed for knight's sequential move
+// @dir1 direction of the 1st part --> two tiles
+// @dir2 direction of the 2nd part --> one tile
+// @x initial point
+// Exception case: dir1, dir2 has to be 0,2,4,6; or else throw error and return original point;
+// return Ending point if within board or is an integer.
+function pairMoves(x,dir1,dir2){
+	if(dir1%2 != 0 || dir2%2 !=0){
+		alert("Invalid input")
+		return x;
+	}else{
+		var A1 = move(x,dir1,2,true);
+		var A2 = move(x,dir2,1,true);
+	
+		var A = numeric.dot(A2,A1); // combined matrix
+		
+
+		var xE = numeric.log(numeric.dot(A,numeric.exp(x)));	
+		if(xE[0]<9&&xE[0]>0 && xE[1]<9&&xE[1]>0)
+			if (xE[0]===parseInt(xE[0]) && xE[1]===parseInt(xE[1])) // Integer verifying.
+				return xE;
+			else 
+				return x;
+		else
+			return x;
+	}
 	
 }
+
 // make a move in the @dir direction for @step steps from point @x
-// return the ending point if only target is within the board
-// return the original point if the target is out of board
-function move(x,dir,step){
+/* @matrix boolean value,
+		return transformation matrix if true
+		else return end point
+	
+	else
+		return the ending point if only target is within the board and Is integer
+		return the original point if the target is out of board
+*/
+function move(x,dir,step,matrix){
 	var eleP = Math.exp(step);
 	var eleN = Math.exp(-1*step);
 	var xT = numeric.exp(x);
@@ -47,15 +114,22 @@ function move(x,dir,step){
 			var A = [[eleN,0],[0,1]];
 			break;
 		case 7:
-			var A = [[eleN,0],[0,eleN]];
+			var A = [[eleN,0],[0,eleP]];
 			break;
 	}
 	xE = numeric.log(numeric.dot(A,xT));
-	if(xE[0]<9&&xE[0]>0 && xE[1]<9&&xE[1]>0)
-		return xE;
-	else
-		return x;
-
+	
+	if(!matrix){
+		if(xE[0]<9&&xE[0]>0 && xE[1]<9&&xE[1]>0)
+			if (xE[0]===parseInt(xE[0]) && xE[1]===parseInt(xE[1])) // Integer verifying.
+				return xE;
+			else 
+				return x;
+		else
+			return x;
+	} else {
+		return A;
+	}
 }
 
 // display a list of possibilities in a <ul>
@@ -68,58 +142,3 @@ function display(place,doables){
 	}
 	place.appendChild(list);
 }
-/*
-	// a Rook at point (4,4), horizontal and vertical i steps;
-
-	for(var i=-7;i<=7;i++){
-		if(i===0) continue; // skip the one that's not moving
-
-		var ele = Math.exp(i);
-		var Ahori = [[ele,0],[0,1]];
-		var Avert = [[1,0],[0,ele]];
-
-		var xEH = numeric.log(numeric.dot(Ahori,xT));
-		var xEV = numeric.log(numeric.dot(Avert,xT));
-		if(xEH[0]<9&&xEH[0]>0 && xEH[1]<9&&xEH[1]>0){
-			doables.push(xEH);
-		}
-// 
-		if(xEV[0]<9&&xEV[0]>0 && xEV[1]<9&&xEV[1]>0){
-			doables.push(xEV);
-		}
-	} 
-*/
-
-/*
-	// a Bishop at point (4,4), diagnoally i steps
-	for(var i=0;i<=7;i++){
-		if(i===0) continue; // skip the one that's not moving
-
-		var eleP = Math.exp(i);  //Positive expotential
-		var eleN = Math.exp(-1*i); //Negative expotential
-
-		var A1 = [[eleP,0],[0,eleP]];
-		var A2 = [[eleN,0],[0,eleP]];
-		var A3 = [[eleP,0],[0,eleN]];
-		var A4 = [[eleN,0],[0,eleN]];
-
-		var xE1 = numeric.log(numeric.dot(A1,xT));
-		var xE2 = numeric.log(numeric.dot(A2,xT));
-		var xE3 = numeric.log(numeric.dot(A3,xT));
-		var xE4 = numeric.log(numeric.dot(A4,xT));
-
-		if(xE1[0]<9&&xE1[0]>0 && xE1[1]<9&&xE1[1]>0){
-			doables.push(xE1);
-		}
-		if(xE2[0]<9&&xE2[0]>0 && xE2[1]<9&&xE2[1]>0){
-		 	doables.push(xE2);
-		}
-		if(xE3[0]<9&&xE3[0]>0 && xE3[1]<9&&xE3[1]>0){
-			doables.push(xE3);
-		}
-		if(xE4[0]<9&&xE4[0]>0 && xE4[1]<9&&xE4[1]>0){
-			doables.push(xE4);
-		}
-	}
-*/
-	
